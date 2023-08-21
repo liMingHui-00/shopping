@@ -37,8 +37,13 @@
 </template>
 
 <script>
+import request from "@/utils/request";
 export default {
   name: "LoginPage",
+  async created() {
+    const res = await request.get("/captcha/image");
+    console.log(res);
+  },
 };
 </script>
 
