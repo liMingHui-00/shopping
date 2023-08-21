@@ -20,10 +20,11 @@
           <input
             class="inp"
             maxlength="5"
+            v-model="picCode"
             placeholder="请输入图形验证码"
             type="text"
           />
-          <img src="@/assets/code.png" alt="" />
+          <img :src="picUrl" alt="" @click="getPicCode()" />
         </div>
         <div class="form-item">
           <input class="inp" placeholder="请输入短信验证码" type="text" />
@@ -39,10 +40,23 @@
 <script>
 import request from "@/utils/request";
 export default {
-  name: "LoginPage",
+  data() {
+    return {
+      picCode: "", //用户输入的图形验证码
+
+      picKey: "", //将来请求传递的图形验证码唯一标识
+      picUrl: "", //存储请求渲染的图片地址
+    };
+  },
   async created() {
-    const res = await request.get("/captcha/image");
-    console.log(res);
+    this.getPicCode();
+  },
+  methods: {
+    async getPicCode() {
+      const { data } = await request.get("/captcha/image");
+      this.picKey = data.data.key;
+      this.picUrl = data.data.base64;
+    },
   },
 };
 </script>
