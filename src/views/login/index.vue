@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import request from "@/utils/request";
+import { getPicCode } from "@/api/login";
 export default {
   data() {
     return {
@@ -53,7 +53,8 @@ export default {
   },
   methods: {
     async getPicCode() {
-      const { data } = await request.get("/captcha/image");
+      // 封装api的好处  请求与页面逻辑分离  相同的请求可以直接复用 请求进行了统一的管理
+      const { data } = await getPicCode();
       this.picKey = data.data.key;
       this.picUrl = data.data.base64;
     },
