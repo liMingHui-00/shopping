@@ -1,6 +1,7 @@
 <template>
   <div class="login">
     <van-nav-bar title="会员登录" left-arrow @click-left="$router.go(-1)" />
+
     <div class="container">
       <div class="title">
         <h3>手机号登录</h3>
@@ -10,33 +11,33 @@
       <div class="form">
         <div class="form-item">
           <input
+            v-model="mobile"
             class="inp"
             maxlength="11"
-            v-model="mobile"
             placeholder="请输入手机号码"
             type="text"
           />
         </div>
         <div class="form-item">
           <input
+            v-model="picCode"
             class="inp"
             maxlength="5"
-            v-model="picCode"
             placeholder="请输入图形验证码"
             type="text"
           />
-          <img :src="picUrl" alt="" @click="getPicCode()" />
+          <img v-if="picUrl" :src="picUrl" @click="getPicCode" alt="" />
         </div>
         <div class="form-item">
           <input
+            v-model="msgCode"
             class="inp"
             placeholder="请输入短信验证码"
-            v-model="msgCode"
             type="text"
           />
           <button @click="getCode">
             {{
-              totalSecond === second ? "获取验证码" : second + "秒后获取验证码"
+              second === totalSecond ? "获取验证码" : second + "秒后重新发送"
             }}
           </button>
         </div>
@@ -48,83 +49,108 @@
 </template>
 
 <script>
-import { getPicCode, getMsgCode, loginCode } from "@/api/login";
+import { codeLogin, getMsgCode, getPicCode } from "@/api/login";
+// import { Toast } from 'vant'
+
 export default {
+  name: "LoginPage",
   data() {
     return {
-      picCode: "", //用户输入的图形验证码
-
-      picKey: "", //将来请求传递的图形验证码唯一标识
-      picUrl: "", //存储请求渲染的图片地址
-      totalSecond: 60, //总秒数
-      timer: null, //定时器
-      second: 60, //倒计时的秒数
-      mobile: "", //手机号
-      msgCode: "", //验证码
+      picKey: "", // 将来请求传递的图形验证码唯一标识
+      picUrl: "", // 存储请求渲染的图片地址
+      totalSecond: 60, // 总秒数
+      second: 60, // 当前秒数，开定时器对 second--
+      timer: null, // 定时器 id
+      mobile: "", // 手机号
+      picCode: "", // 用户输入的图形验证码
+      msgCode: "", // 短信验证码
     };
   },
   async created() {
     this.getPicCode();
   },
   methods: {
+    // 获取图形验证码
     async getPicCode() {
-      // 封装api的好处  请求与页面逻辑分离  相同的请求可以直接复用 请求进行了统一的管理
-      const { data } = await getPicCode();
-      this.picKey = data.data.key;
-      this.picUrl = data.data.base64;
+      const {
+        data: { base64, key },
+      } = await getPicCode();
+      this.picUrl = base64; // 存储地址
+      this.picKey = key; // 存储唯一标识
+
+      // Toast('获取图形验证码成功')
+      // this.$toast('获取成功')
+      // this.$toast.success('成功文案')
     },
-    // 校验手机号和验证码
-    valiFn() {
+
+    // 校验 手机号 和 图形验证码 是否合法
+    // 通过校验，返回true
+    // 不通过校验，返回false
+    validFn() {
       if (!/^1[3-9]\d{9}$/.test(this.mobile)) {
         this.$toast("请输入正确的手机号");
         return false;
       }
       if (!/^\w{4}$/.test(this.picCode)) {
-        this.$toast("请输入正确的验证码");
+        this.$toast("请输入正确的图形验证码");
         return false;
       }
       return true;
     },
+
+    // 获取短信验证码
     async getCode() {
-      // 如果校验不通过 直接返回
-      if (!this.valiFn()) {
+      if (!this.validFn()) {
+        // 如果没通过校验，没必要往下走了
         return;
       }
+
+      // 当前目前没有定时器开着，且 totalSecond 和 second 一致 (秒数归位) 才可以倒计时
       if (!this.timer && this.second === this.totalSecond) {
         // 发送请求
-        const res = await getMsgCode(this.picCode, this.picKey, this.mobile);
-        console.log(res);
-        this.$toast("验证码发送成功");
+        // 预期：希望如果响应的status非200，最好抛出一个promise错误，await只会等待成功的promise
+        await getMsgCode(this.picCode, this.picKey, this.mobile);
+
+        this.$toast("短信发送成功，注意查收");
+
+        // 开启倒计时
         this.timer = setInterval(() => {
           this.second--;
-          // 如果秒数减到负数  归位
+
           if (this.second <= 0) {
             clearInterval(this.timer);
-            this.second = this.totalSecond;
-            this.timer = null;
+            this.timer = null; // 重置定时器 id
+            this.second = this.totalSecond; // 归位
           }
         }, 1000);
-        // 发送请求  获取验证码
-        this.$toast("发送成功，请注意查收！");
       }
     },
+
     // 登录
     async login() {
-      // 校验上面的验证是否通过
-      if (!this.valiFn()) {
+      if (!this.validFn()) {
         return;
       }
+
       if (!/^\d{6}$/.test(this.msgCode)) {
         this.$toast("请输入正确的手机验证码");
         return;
       }
-      await loginCode(this.msgCode, this.mobile);
-      // 登录成功后返回首页
-      this.$router.push("/");
+
+      console.log("发送登录请求");
+
+      const res = await codeLogin(this.mobile, this.msgCode);
+      this.$store.commit("user/setUserInfo", res.data);
       this.$toast("登录成功");
+
+      // 进行判断，看地址栏有无回跳地址
+      // 1. 如果有   => 说明是其他页面，拦截到登录来的，需要回跳
+      // 2. 如果没有 => 正常去首页
+      const url = this.$route.query.backUrl || "/";
+      this.$router.replace(url);
     },
   },
-  // 离开页面  清空定时器
+  // 离开页面清除定时器
   destroyed() {
     clearInterval(this.timer);
   },
