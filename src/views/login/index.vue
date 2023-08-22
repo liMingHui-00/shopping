@@ -50,10 +50,7 @@
 
 <script>
 import { codeLogin, getMsgCode, getPicCode } from "@/api/login";
-// import { Toast } from 'vant'
-
 export default {
-  name: "LoginPage",
   data() {
     return {
       picKey: "", // 将来请求传递的图形验证码唯一标识
@@ -125,29 +122,21 @@ export default {
         }, 1000);
       }
     },
-
     // 登录
     async login() {
       if (!this.validFn()) {
         return;
       }
-
       if (!/^\d{6}$/.test(this.msgCode)) {
         this.$toast("请输入正确的手机验证码");
         return;
       }
-
-      console.log("发送登录请求");
-
       const res = await codeLogin(this.mobile, this.msgCode);
+      // console.log(res.data)//{userId: 17452, token: '96d87af844ed1c83eaa689e91f0ccc42'};
+      // 调用store的方法 把用户信息存储
       this.$store.commit("user/setUserInfo", res.data);
       this.$toast("登录成功");
-
-      // 进行判断，看地址栏有无回跳地址
-      // 1. 如果有   => 说明是其他页面，拦截到登录来的，需要回跳
-      // 2. 如果没有 => 正常去首页
-      const url = this.$route.query.backUrl || "/";
-      this.$router.replace(url);
+      this.$router.push("/");
     },
   },
   // 离开页面清除定时器
