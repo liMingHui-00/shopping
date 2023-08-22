@@ -11,6 +11,7 @@ import ProDetail from "@/views/prodetail";
 import Login from "@/views/login";
 import Pay from "@/views/pay";
 import MyOrder from "@/views/myorder";
+import store from "@/store/index";
 
 Vue.use(VueRouter);
 
@@ -67,6 +68,25 @@ const routes = [
 
 const router = new VueRouter({
   routes,
+});
+// 全局前置导航守卫
+// 把需要拦截的页面存储到数组中
+const authUrl = ["/pay", "/myorder"];
+router.beforeEach((to, from, next) => {
+  // 获取token
+  const token = store.state.user.userInfo.token;
+  if (!authUrl.includes(to.path)) {
+    // 去的页面不需要权限验证  放行
+    next();
+    return;
+  }
+  // 去的页面需要权限验证
+  if (token) {
+    next();
+  } else {
+    // 没有token 直接去登录
+    next("/login");
+  }
 });
 
 export default router;
