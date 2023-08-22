@@ -20,3 +20,13 @@ export const setUserInfo = (obj) => {
 export const removeUserInfo = () => {
   localStorage.removeItem("hm_shopping_info");
 };
+
+// 获取搜索历史
+export const getHistory = () => {
+  const history = localStorage.getItem("hm_shopping_history");
+  return history ? JSON.parse(history) : [];
+};
+// 设置搜索历史
+export const setHistory = (arrHistory) => {
+  localStorage.setItem("hm_shopping_history", JSON.stringify(arrHistory));
+};
