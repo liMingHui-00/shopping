@@ -12,6 +12,7 @@
           <input
             class="inp"
             maxlength="11"
+            v-model="mobile"
             placeholder="请输入手机号码"
             type="text"
           />
@@ -28,7 +29,11 @@
         </div>
         <div class="form-item">
           <input class="inp" placeholder="请输入短信验证码" type="text" />
-          <button>获取验证码</button>
+          <button @click="getCode">
+            {{
+              totalSecond === second ? "获取验证码" : second + "秒后获取验证码"
+            }}
+          </button>
         </div>
       </div>
 
@@ -38,7 +43,7 @@
 </template>
 
 <script>
-import { getPicCode } from "@/api/login";
+import { getPicCode, getMsgCode } from "@/api/login";
 export default {
   data() {
     return {
@@ -46,6 +51,10 @@ export default {
 
       picKey: "", //将来请求传递的图形验证码唯一标识
       picUrl: "", //存储请求渲染的图片地址
+      totalSecond: 60, //总秒数
+      timer: null, //定时器
+      second: 60, //倒计时的秒数
+      mobile: "", //手机号
     };
   },
   async created() {
@@ -58,6 +67,45 @@ export default {
       this.picKey = data.data.key;
       this.picUrl = data.data.base64;
     },
+    // 校验手机号和验证码
+    valiFn() {
+      if (!/^1[3-9]\d{9}$/.test(this.mobile)) {
+        this.$toast("请输入正确的手机号");
+        return false;
+      }
+      if (!/^\w{4}$/.test(this.picCode)) {
+        this.$toast("请输入正确的验证码");
+        return false;
+      }
+      return true;
+    },
+    async getCode() {
+      // 如果校验不通过 直接返回
+      if (!this.valiFn()) {
+        return;
+      }
+      if (!this.timer && this.second === this.totalSecond) {
+        // 发送请求
+        const res = await getMsgCode(this.picCode, this.picKey, this.mobile);
+        console.log(res);
+        this.$toast("验证码发送成功");
+        this.timer = setInterval(() => {
+          this.second--;
+          // 如果秒数减到负数  归位
+          if (this.second <= 0) {
+            clearInterval(this.timer);
+            this.second = this.totalSecond;
+            this.timer = null;
+          }
+        }, 1000);
+        // 发送请求  获取验证码
+        this.$toast("发送成功，请注意查收！");
+      }
+    },
+  },
+  // 离开页面  清空定时器
+  destroyed() {
+    clearInterval(this.timer);
   },
 };
 </script>
