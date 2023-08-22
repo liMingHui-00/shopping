@@ -11,6 +11,7 @@ import {
   GridItem,
   Icon,
   Rate,
+  ActionSheet,
 } from "vant";
 
 Vue.use(Tabbar);
@@ -24,3 +25,4 @@ Vue.use(SwipeItem);
 Vue.use(GridItem);
 Vue.use(Icon);
 Vue.use(Rate);
+Vue.use(ActionSheet);
