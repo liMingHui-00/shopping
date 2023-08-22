@@ -28,7 +28,12 @@
           <img :src="picUrl" alt="" @click="getPicCode()" />
         </div>
         <div class="form-item">
-          <input class="inp" placeholder="请输入短信验证码" type="text" />
+          <input
+            class="inp"
+            placeholder="请输入短信验证码"
+            v-model="msgCode"
+            type="text"
+          />
           <button @click="getCode">
             {{
               totalSecond === second ? "获取验证码" : second + "秒后获取验证码"
@@ -37,13 +42,13 @@
         </div>
       </div>
 
-      <div class="login-btn">登录</div>
+      <div @click="login" class="login-btn">登录</div>
     </div>
   </div>
 </template>
 
 <script>
-import { getPicCode, getMsgCode } from "@/api/login";
+import { getPicCode, getMsgCode, loginCode } from "@/api/login";
 export default {
   data() {
     return {
@@ -55,6 +60,7 @@ export default {
       timer: null, //定时器
       second: 60, //倒计时的秒数
       mobile: "", //手机号
+      msgCode: "", //验证码
     };
   },
   async created() {
@@ -101,6 +107,21 @@ export default {
         // 发送请求  获取验证码
         this.$toast("发送成功，请注意查收！");
       }
+    },
+    // 登录
+    async login() {
+      // 校验上面的验证是否通过
+      if (!this.valiFn()) {
+        return;
+      }
+      if (!/^\d{6}$/.test(this.msgCode)) {
+        this.$toast("请输入正确的手机验证码");
+        return;
+      }
+      await loginCode(this.msgCode, this.mobile);
+      // 登录成功后返回首页
+      this.$router.push("/");
+      this.$toast("登录成功");
     },
   },
   // 离开页面  清空定时器

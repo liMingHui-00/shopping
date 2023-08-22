@@ -13,3 +13,9 @@ export const getMsgCode = (captchaCode, captchaKey, mobile) => {
     },
   });
 };
+// 登录接口
+export const loginCode = (smsCode, mobile) => {
+  return request.post("/passport/login", {
+    form: { isParty: false, partyData: {}, smsCode, mobile },
+  });
+};
