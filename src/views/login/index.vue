@@ -133,7 +133,7 @@ export default {
       }
       const res = await codeLogin(this.mobile, this.msgCode);
       // console.log(res.data)//{userId: 17452, token: '96d87af844ed1c83eaa689e91f0ccc42'};
-      // 调用store的方法 把用户信息存储
+
       this.$store.commit("user/setUserInfo", res.data);
       this.$toast("登录成功");
       this.$router.push("/");

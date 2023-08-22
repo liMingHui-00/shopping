@@ -13,6 +13,12 @@ const instance = axios.create({
 instance.interceptors.request.use(
   function (config) {
     // 在发送请求之前做些什么
+    // 请求等待的loading效果
+    Toast.loading({
+      message: "请求中...",
+      duration: 0, //toast 不会消失  在响应拦截器中关闭
+      forbidClick: true,
+    });
     return config;
   },
   function (error) {
@@ -33,6 +39,9 @@ instance.interceptors.response.use(
       Toast(res.message);
       // 抛出一个错误的promise
       return Promise.reject(res.message);
+    } else {
+      // 响应成功  走业务核心代码 关闭loading
+      Toast.clear();
     }
     return res;
   },
