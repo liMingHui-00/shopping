@@ -59,30 +59,30 @@ export default {
     //   context.dispatch("getCartAction");
     // },
   },
-  // getters: {
-  //   // 求所有的商品累加总数
-  //   cartTotal(state) {
-  //     return state.cartList.reduce((sum, item) => sum + item.goods_num, 0);
-  //   },
-  //   // 选中的商品项
-  //   selCartList(state) {
-  //     return state.cartList.filter((item) => item.isChecked);
-  //   },
-  //   // 选中的总数
-  //   selCount(state, getters) {
-  //     return getters.selCartList.reduce((sum, item) => sum + item.goods_num, 0);
-  //   },
-  //   // 选中的总价
-  //   selPrice(state, getters) {
-  //     return getters.selCartList
-  //       .reduce((sum, item) => {
-  //         return sum + item.goods_num * item.goods.goods_price_min;
-  //       }, 0)
-  //       .toFixed(2);
-  //   },
-  //   // 是否全选
-  //   isAllChecked(state) {
-  //     return state.cartList.every((item) => item.isChecked);
-  //   },
-  // },
+  getters: {
+    // 求所有的商品累加总数
+    cartTotal(state) {
+      return state.cartList.reduce((sum, item) => sum + item.goods_num, 0);
+    },
+    // 选中的商品项
+    selCartList(state) {
+      return state.cartList.filter((item) => item.isChecked);
+    },
+    // 选中的总数
+    selCount(state, getters) {
+      return getters.selCartList.reduce((sum, item) => sum + item.goods_num, 0);
+    },
+    // 选中的总价
+    selPrice(state, getters) {
+      return getters.selCartList
+        .reduce((sum, item) => {
+          return sum + item.goods_num * item.goods.goods_price_min;
+        }, 0)
+        .toFixed(2);
+    },
+    // 是否全选
+    isAllChecked(state) {
+      return state.cartList.every((item) => item.isChecked);
+    },
+  },
 };
