@@ -89,7 +89,7 @@
       <div @click="addFn()" class="btn-add">加入购物车</div>
       <div @click="buyFn()" class="btn-buy">立刻购买</div>
     </div>
-    <!-- 购物车弹层 -->
+    <!-- 弹层 -->
     <van-action-sheet
       v-model="showPannel"
       :title="mode === 'cart' ? '加入购物车' : '立刻购买'"
@@ -119,7 +119,7 @@
           <div class="btn" v-if="mode === 'cart'" @click="addCart">
             加入购物车
           </div>
-          <div class="btn now" v-else>立刻购买</div>
+          <div class="btn now" @click="goBuyNow" v-else>立刻购买</div>
         </div>
         <div class="btn-none" v-else>该商品已抢完</div>
       </div>
@@ -179,6 +179,37 @@ export default {
     buyFn() {
       this.mode = "buyNow";
       this.showPannel = true;
+    },
+    goBuyNow() {
+      // 未登录处理
+      if (!this.$store.state.user.userInfo.token) {
+        this.$dialog
+          .confirm({
+            title: "温馨提示",
+            message: "此时需要先登录才能继续操作哦",
+            confirmButtonText: "去登录",
+            cancelButtonText: "再逛逛",
+          })
+          .then(() => {
+            this.$router.replace({
+              path: "/login",
+              query: {
+                backUrl: this.$route.fullPath,
+              },
+            });
+          })
+          .catch(() => {});
+        return;
+      }
+      this.$router.push({
+        path: "/pay",
+        query: {
+          mode: "buyNow",
+          goodsId: this.goodsId,
+          goodsSkuId: this.detail.skuList[0].goods_sku_id,
+          goodsNum: this.addCount,
+        },
+      });
     },
     async addCart() {
       // 判断用户是否有登录

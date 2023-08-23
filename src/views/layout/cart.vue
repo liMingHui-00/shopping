@@ -59,6 +59,7 @@
           <div
             v-if="!isEdit"
             class="goPay"
+            @click="goPay"
             :class="{ disabled: selCount === 0 }"
           >
             结算({{ selCount }})
@@ -74,6 +75,7 @@
         </div>
       </div>
     </div>
+    <!-- 空购物车 -->
     <div class="empty-cart" v-else>
       <img src="@/assets/empty.png" alt="" />
       <div class="tips">您的购物车是空的, 快去逛逛吧</div>
@@ -90,7 +92,7 @@ export default {
   components: { CountBox },
   data() {
     return {
-      isEdit: "false",
+      isEdit: false,
     };
   },
   created() {
@@ -130,6 +132,18 @@ export default {
 
       await this.$store.dispatch("cart/delSelect");
       this.isEdit = false;
+    },
+    goPay() {
+      // 判断有无商品选中
+      if (this.selCount > 0) {
+        this.$router.push({
+          path: "/pay",
+          query: {
+            mode: "cart",
+            cartIds: this.selCartList.map((item) => item.id).join(","),
+          },
+        });
+      }
     },
   },
   watch: {
