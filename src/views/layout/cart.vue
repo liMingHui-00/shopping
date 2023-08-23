@@ -29,7 +29,12 @@
             <div class="price">
               ¥ <span>{{ item.goods.goods_price_min }}</span>
             </div>
-            <CountBox :value="item.goods_num"></CountBox>
+            <CountBox
+              @input="
+                (value) => changeCount(value, item.goods_id, item.goods_sku_id)
+              "
+              :value="item.goods_num"
+            ></CountBox>
           </span>
         </div>
       </div>
@@ -87,6 +92,15 @@ export default {
     },
     toggleAllCheck() {
       this.$store.commit("cart/toggleAllCheck", !this.isAllChecked);
+    },
+    changeCount(goodsNum, goodsId, goodsSkuId) {
+      // console.log(goodsNum, goodsId, goodsSkuId);
+      // 数量修改
+      this.$store.dispatch("cart/changeCountAction", {
+        goodsNum,
+        goodsId,
+        goodsSkuId,
+      });
     },
   },
 };

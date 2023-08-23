@@ -24,10 +24,10 @@ export default {
         item.isChecked = flag;
       });
     },
-    // changeCount(state, { goodsId, goodsNum }) {
-    //   const goods = state.cartList.find((item) => item.goods_id === goodsId);
-    //   goods.goods_num = goodsNum;
-    // },
+    changeCount(state, { goodsId, goodsNum }) {
+      const goods = state.cartList.find((item) => item.goods_id === goodsId);
+      goods.goods_num = goodsNum;
+    },
   },
   actions: {
     async getCartAction(context) {
@@ -39,13 +39,13 @@ export default {
       });
       context.commit("setCartList", data.list);
     },
-    // async changeCountAction(context, obj) {
-    //   const { goodsNum, goodsId, goodsSkuId } = obj;
-    //   // 先本地修改
-    //   context.commit("changeCount", { goodsId, goodsNum });
-    //   // 再同步到后台
-    //   await changeCount(goodsId, goodsNum, goodsSkuId);
-    // },
+    async changeCountAction(context, obj) {
+      const { goodsNum, goodsId, goodsSkuId } = obj;
+      // 先本地修改
+      context.commit("changeCount", { goodsId, goodsNum });
+      // 再同步到后台
+      await changeCount(goodsId, goodsNum, goodsSkuId);
+    },
 
     // 删除购物车数据
     // async delSelect(context) {
