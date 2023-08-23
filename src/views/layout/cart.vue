@@ -1,66 +1,83 @@
 <template>
   <div class="cart">
     <van-nav-bar title="购物车" fixed />
-    <!-- 购物车开头 -->
-    <div class="cart-title">
-      <span class="all"
-        >共<i>{{ cartTotal }}</i
-        >件商品</span
-      >
-      <span class="edit">
-        <van-icon name="edit" />
-        编辑
-      </span>
-    </div>
-
-    <!-- 购物车列表 -->
-    <div class="cart-list">
-      <div class="cart-item" v-for="item in cartList" :key="item.goods_id">
-        <van-checkbox
-          @click="toggleCheck(item.goods_id)"
-          :value="item.isChecked"
-        ></van-checkbox>
-        <div class="show">
-          <img :src="item.goods.goods_image" alt="" />
-        </div>
-        <div class="info">
-          <span class="tit text-ellipsis-2">{{ item.goods.goods_name }}</span>
-          <span class="bottom">
-            <div class="price">
-              ¥ <span>{{ item.goods.goods_price_min }}</span>
-            </div>
-            <CountBox
-              @input="
-                (value) => changeCount(value, item.goods_id, item.goods_sku_id)
-              "
-              :value="item.goods_num"
-            ></CountBox>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-fixed">
-      <div @click="toggleAllCheck" class="all-check">
-        <van-checkbox :value="isAllChecked" icon-size="18"></van-checkbox>
-        全选
+    <div v-if="this.$store.state.user.userInfo.token && cartList.length > 0">
+      <!-- 购物车开头 -->
+      <div class="cart-title">
+        <span class="all"
+          >共<i>{{ cartTotal }}</i
+          >件商品</span
+        >
+        <span @click="isEdit = !isEdit" class="edit">
+          <van-icon name="edit" />
+          编辑
+        </span>
       </div>
 
-      <div class="all-total">
-        <div class="price">
-          <span>合计：</span>
-          <span
-            >¥ <i class="totalPrice">{{ selPrice }}</i></span
+      <!-- 购物车列表 -->
+      <div class="cart-list">
+        <div class="cart-item" v-for="item in cartList" :key="item.goods_id">
+          <van-checkbox
+            @click="toggleCheck(item.goods_id)"
+            :value="item.isChecked"
+          ></van-checkbox>
+          <div class="show">
+            <img :src="item.goods.goods_image" alt="" />
+          </div>
+          <div class="info">
+            <span class="tit text-ellipsis-2">{{ item.goods.goods_name }}</span>
+            <span class="bottom">
+              <div class="price">
+                ¥ <span>{{ item.goods.goods_price_min }}</span>
+              </div>
+              <CountBox
+                @input="
+                  (value) =>
+                    changeCount(value, item.goods_id, item.goods_sku_id)
+                "
+                :value="item.goods_num"
+              ></CountBox>
+            </span>
+          </div>
+        </div>
+      </div>
+      <!-- 购物车底部 -->
+      <div class="footer-fixed">
+        <div @click="toggleAllCheck" class="all-check">
+          <van-checkbox :value="isAllChecked" icon-size="18"></van-checkbox>
+          全选
+        </div>
+
+        <div class="all-total">
+          <div class="price">
+            <span>合计：</span>
+            <span
+              >¥ <i class="totalPrice">{{ selPrice }}</i></span
+            >
+          </div>
+          <!--                                          没有选中商品时  高亮取消          -->
+          <div
+            v-if="!isEdit"
+            class="goPay"
+            :class="{ disabled: selCount === 0 }"
           >
-        </div>
-        <!--                                          没有选中商品时  高亮取消          -->
-        <div v-if="true" class="goPay" :class="{ disabled: selCount === 0 }">
-          结算({{ selCount }})
-        </div>
-        <div v-else class="delete" :class="{ disabled: selCount === 0 }">
-          删除
+            结算({{ selCount }})
+          </div>
+          <div
+            v-else
+            @click="handleDel"
+            class="delete"
+            :class="{ disabled: selCount === 0 }"
+          >
+            删除
+          </div>
         </div>
       </div>
+    </div>
+    <div class="empty-cart" v-else>
+      <img src="@/assets/empty.png" alt="" />
+      <div class="tips">您的购物车是空的, 快去逛逛吧</div>
+      <div class="btn" @click="$router.push('/')">去逛逛</div>
     </div>
   </div>
 </template>
@@ -71,6 +88,11 @@ import { mapGetters, mapState } from "vuex";
 
 export default {
   components: { CountBox },
+  data() {
+    return {
+      isEdit: "false",
+    };
+  },
   created() {
     if (this.$store.state.user.userInfo.token) {
       this.$store.dispatch("cart/getCartAction");
@@ -102,11 +124,54 @@ export default {
         goodsSkuId,
       });
     },
+    async handleDel() {
+      // 如果没有商品被选中 直接返回
+      if (this.selCount === 0) return;
+
+      await this.$store.dispatch("cart/delSelect");
+      this.isEdit = false;
+    },
+  },
+  watch: {
+    // 监视编辑状态  动态控制复选框状态
+    isEdit(value) {
+      if (value) {
+        // 是编辑状态  把复选框isChecked=false
+        this.$store.commit("cart/toggleAllCheck", false);
+      } else {
+        this.$store.commit("cart/toggleAllCheck", true);
+      }
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
+.empty-cart {
+  padding: 80px 30px;
+  img {
+    width: 140px;
+    height: 92px;
+    display: block;
+    margin: 0 auto;
+  }
+  .tips {
+    text-align: center;
+    color: #666;
+    margin: 30px;
+  }
+  .btn {
+    width: 110px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    background-color: #fa2c20;
+    border-radius: 16px;
+    color: #fff;
+    display: block;
+    margin: 0 auto;
+  }
+}
 // 主题 padding
 .cart {
   padding-top: 46px;
