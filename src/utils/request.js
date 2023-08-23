@@ -1,4 +1,5 @@
 import axios from "axios";
+import store from "@/store/index";
 import { Toast } from "vant";
 
 // 创建 axios 实例，将来对创建出来的实例，进行自定义配置
@@ -19,6 +20,11 @@ instance.interceptors.request.use(
       duration: 0, //toast 不会消失  在响应拦截器中关闭
       forbidClick: true,
     });
+    const token = store.state.user.userInfo.token;
+    if (token) {
+      config.headers["Access-Token"] = token;
+      config.headers.platform = "H5";
+    }
     return config;
   },
   function (error) {

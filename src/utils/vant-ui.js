@@ -6,6 +6,7 @@ import {
   Toast,
   Search,
   Swipe,
+  Dialog,
   Grid,
   SwipeItem,
   GridItem,
@@ -14,6 +15,7 @@ import {
   ActionSheet,
 } from "vant";
 
+Vue.use(Dialog);
 Vue.use(Tabbar);
 Vue.use(TabbarItem);
 Vue.use(NavBar);

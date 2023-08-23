@@ -82,6 +82,7 @@
         <span>首页</span>
       </div>
       <div class="icon-cart">
+        <span v-if="cartTotal > 0" class="num">{{ cartTotal }}</span>
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
@@ -111,11 +112,13 @@
         </div>
         <div class="num-box">
           <span>数量</span>
-          数字框占位
+          <CountBox v-model="addCount"></CountBox>
         </div>
         <!-- 有库存显示按钮 -->
         <div class="showbtn" v-if="detail.stock_total > 0">
-          <div class="btn" v-if="mode === 'cart'">加入购物车</div>
+          <div class="btn" v-if="mode === 'cart'" @click="addCart">
+            加入购物车
+          </div>
           <div class="btn now" v-else>立刻购买</div>
         </div>
         <div class="btn-none" v-else>该商品已抢完</div>
@@ -126,7 +129,9 @@
 
 <script>
 import { getProDetail, getProComments } from "@/api/product";
+import { addCart } from "@/api/cart";
 import defaultImg from "@/assets/default-avatar.png";
+import CountBox from "@/components/CountBox.vue";
 export default {
   name: "ProDetail",
   data() {
@@ -134,11 +139,13 @@ export default {
       images: [],
       current: 0,
       comments: null,
-      comment: [], //评价
-      commentLimit: 3, //限制显示评价个数
-      detail: {}, //商品详情
-      showPannel: false, //弹层隐藏
+      comment: [],
+      commentLimit: 3,
+      detail: {},
+      showPannel: false,
+      addCount: 1,
       mode: "cart", //标记弹层状态
+      cartTotal: 0,
     };
   },
   computed: {
@@ -151,15 +158,14 @@ export default {
     const {
       data: { detail },
     } = await getProDetail(this.goodsId);
-
     this.detail = detail;
     this.images = detail.goods_images;
     // 获取评价
     const { data } = await getProComments(this.goodsId, this.commentLimit);
-
     this.comments = data.total;
     this.comment = data.list;
-    console.log(this.comment);
+    // console.log(this.comment);
+    // console.log(this.$store.state.user.userInfo.token);
   },
   methods: {
     onChange(index) {
@@ -174,7 +180,38 @@ export default {
       this.mode = "buyNow";
       this.showPannel = true;
     },
+    async addCart() {
+      // 判断用户是否有登录
+      if (!this.$store.state.user.userInfo.token) {
+        this.$dialog
+          .confirm({
+            title: "温馨提示",
+            message: "此时需要先登录才能继续操作哦",
+            confirmButtonText: "去登录",
+            cancelButtonText: "再逛逛",
+          })
+          .then(() => {
+            this.$router.replace({
+              path: "/login",
+              query: {
+                backUrl: this.$route.fullPath,
+              },
+            });
+          })
+          .catch(() => {});
+        return;
+      }
+      const { data } = await addCart(
+        this.goodsId,
+        this.addCount,
+        this.detail.skuList[0].goods_sku_id
+      );
+      this.cartTotal = data.cartTotal;
+      this.$toast("加入购物车成功");
+      this.showPannel = false;
+    },
   },
+  components: { CountBox },
 };
 </script>
 
@@ -321,7 +358,22 @@ export default {
     }
   }
 }
-
+.footer .icon-cart {
+  position: relative;
+  padding: 0 6px;
+  .num {
+    z-index: 999;
+    position: absolute;
+    top: -2px;
+    right: 0;
+    min-width: 16px;
+    padding: 0 4px;
+    color: #fff;
+    text-align: center;
+    background-color: #ee0a24;
+    border-radius: 50%;
+  }
+}
 .tips {
   padding: 10px;
 }
