@@ -9,12 +9,14 @@ import {
   Dialog,
   Grid,
   SwipeItem,
+  Checkbox,
   GridItem,
   Icon,
   Rate,
   ActionSheet,
 } from "vant";
 
+Vue.use(Checkbox);
 Vue.use(Dialog);
 Vue.use(Tabbar);
 Vue.use(TabbarItem);
