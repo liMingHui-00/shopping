@@ -4,6 +4,8 @@ import {
   TabbarItem,
   NavBar,
   Toast,
+  Tab,
+  Tabs,
   Search,
   Swipe,
   Dialog,
@@ -18,6 +20,8 @@ import {
 
 Vue.use(Checkbox);
 Vue.use(Dialog);
+Vue.use(Tab);
+Vue.use(Tabs);
 Vue.use(Tabbar);
 Vue.use(TabbarItem);
 Vue.use(NavBar);
