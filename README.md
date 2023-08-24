@@ -1,19 +1,5 @@
 # hm_shopping
 
-## Project setup
-```
-yarn install
-```
+接口地址
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+https://www.apifox.com/apidoc/shared-12ab6b18-adc2-444c-ad11-0e60f5693f66/api-70115944

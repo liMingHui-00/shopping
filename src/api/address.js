@@ -1,9 +1,9 @@
-import request from "@/utils/request";
+import request from "@/utils/request"
 
 // 获取地址列表
 export const getAddressList = () => {
-  return request.get("/address/list");
-};
+  return request.get("/address/list")
+}
 // 提交订单
 export const submitOrder = (mode, params) => {
   return request.post("/checkout/submit", {
@@ -13,5 +13,5 @@ export const submitOrder = (mode, params) => {
     payType: 10, // 余额支付
     isUsePoints: 0, // 是否使用积分
     ...params,
-  });
-};
+  })
+}
